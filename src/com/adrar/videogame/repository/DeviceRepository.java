@@ -6,43 +6,13 @@ import com.adrar.videogame.entity.Device;
 import java.sql.*;
 import java.util.ArrayList;
 
-public class DeviceRepository {
+public class DeviceRepository implements RepositoryInterface<Device>{
     //Attribut
     private final Connection connection;
 
     //Constructeur
     public DeviceRepository() {
         this.connection = Mysql.getConnect();
-    }
-
-    //Méthodes
-    public Device find(Integer id)
-    {
-        Device device = null;
-        try {
-            //1 écrire la requête
-            String sql = "SELECT id, name, type, manufacturer FROM device WHERE id = ?";
-            //2 preparer la requête
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            //3 assigner un paramètre
-            preparedStatement.setInt(1, id);
-            //4 éxécuter la requête
-            ResultSet resultSet = preparedStatement.executeQuery();
-            //5 retourner la requête
-            //Test si le device existe
-            if (resultSet.next())
-            {
-                //Assigner un objet à device
-                device = new Device(
-                        resultSet.getString("name"),
-                        resultSet.getString("type"),
-                        resultSet.getString("manufacturer"));
-                device.setId(resultSet.getInt("id"));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return device;
     }
 
     public ArrayList<Device> findAll()
@@ -79,14 +49,42 @@ public class DeviceRepository {
 
     public Device findOneByName(String name)
     {
-        return null;
+        Device device = null;
+        try{
+            String sql = "SELECT id, name, type, manufacturer FROM device WHERE name = ?";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setString(1, name);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next())
+            {
+                device = new Device(
+                  rs.getString("name"),
+                  rs.getString("type"),
+                  rs.getString("manufacturer")
+                );
+                device.setId(rs.getInt("id"));
+            }
+        } catch(SQLException e){
+            throw new RuntimeException(e);
+        }
+        return device;
     }
 
-    public boolean isDeviceExistsByName(String name) {
-        return  true;
+    public boolean isDeviceExistsByName(String name){
+        Boolean result = false;
+        try{
+            String sql = "SELECT id, name, type, manufacturer FROM device WHERE name = ?";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setString(1, name);
+            ResultSet rs = ps.executeQuery();
+            result = rs.next();
+        } catch (SQLException e){
+            throw new RuntimeException(e);
+        }
+        return result;
     }
 
-    public Device saveDevice(Device device)
+    public Device save(Device device)
     {
         try {
             //1 écrire la requête SQL
@@ -115,10 +113,63 @@ public class DeviceRepository {
         return device;
     }
 
-    public Device updateDevice(Device device)
+    public Device update(Device device)
     {
-        return null;
+        try {
+            String sql = "UPDATE device SET name = ?, type = ?, manufacturer = ? WHERE id = ?";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setString(1, device.getName());
+            ps.setString(2, device.getType());
+            ps.setString(3, device.getManufacturer());
+            ps.setInt(4, device.getId());
+            ps.executeUpdate();
+        } catch(SQLException e){
+            throw new RuntimeException(e);
+        }
+        return device;
     }
 
-    public void delete(Integer id) {}
+    public void delete(Integer id)
+    {
+        try {
+            String sql = "DELETE FROM device WHERE id = ?";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setInt(1, id);
+            int row = ps.executeUpdate();
+            if (row < 1)
+            {
+                System.out.println("Le device n'existe pas");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Device find(Integer id) {
+        Device device = null;
+        try {
+            //1 écrire la requête
+            String sql = "SELECT id, name, type, manufacturer FROM device WHERE id = ?";
+            //2 preparer la requête
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            //3 assigner un paramètre
+            preparedStatement.setInt(1, id);
+            //4 éxécuter la requête
+            ResultSet resultSet = preparedStatement.executeQuery();
+            //5 retourner la requête
+            //Test si le device existe
+            if (resultSet.next())
+            {
+                //Assigner un objet à device
+                device = new Device(
+                        resultSet.getString("name"),
+                        resultSet.getString("type"),
+                        resultSet.getString("manufacturer"));
+                device.setId(resultSet.getInt("id"));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return device;
+    }
 }
