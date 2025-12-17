@@ -39,7 +39,10 @@ public class Main {
         System.out.println(apres);*/
         //System.out.println(gameRepository.findAll());
         //Supprimer le jeu id 5
-        gameRepository.delete(5);
-
+        //gameRepository.delete(5);
+        //System.out.println(gameRepository.findAll());
+        System.out.println(gameRepository.findAll2());
+        System.out.println(gameRepository.findAll());
+        //System.out.println(gameRepository.find(2));
     }
 }

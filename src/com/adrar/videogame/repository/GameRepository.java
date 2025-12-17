@@ -17,8 +17,9 @@ public class GameRepository implements  RepositoryInterface<Game>
     {
         this.connection = Mysql.getConnect();
     }
-    @Override
-    public Game find(Integer id) {
+
+    //Version jointures
+    public Game find2(Integer id) {
         Game game = null;
         try {
             String sql = "SELECT game.id, title, game.type, published_at, GROUP_CONCAT(device.name) device_names, \n" +
@@ -63,7 +64,59 @@ public class GameRepository implements  RepositoryInterface<Game>
     }
 
     @Override
+    public Game find(Integer id) {
+        Game game = null;
+        try {
+            String sql = "SELECT game.id, title, game.type, published_at FROM game WHERE id = ?";
+            //Préparation de la requête
+            PreparedStatement ps = connection.prepareStatement(sql);
+            //Assignation du paramètre
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            //Si il existe
+            if (rs.next())
+            {
+                game = new Game();
+                game.setId(rs.getInt("id"));
+                game.setTitle(rs.getString("title"));
+                game.setType(rs.getString("type"));
+                game.setPublishedAt(rs.getDate("published_at"));
+                //Association des devices
+                ArrayList<Device> devices = findAllDevice(id);
+                game.setDevices(devices);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return game;
+    }
+
+    //Version découpée
+    @Override
     public ArrayList<Game> findAll() {
+        ArrayList<Game> games = new ArrayList<>();
+        try {
+            String sql = "SELECT game.id, title, game.type, published_at FROM game";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Game game = new Game();
+                game.setId(rs.getInt("id"));
+                game.setTitle(rs.getString("title"));
+                game.setType(rs.getString("type"));
+                game.setPublishedAt(rs.getDate("published_at"));
+                //Association des devices
+                ArrayList<Device> devices = findAllDevice(game.getId());
+                game.setDevices(devices);
+                games.add(game);
+            }
+        } catch(SQLException e){
+            throw new RuntimeException(e);
+        }
+        return games;
+    }
+    //Version avec jointures
+    public ArrayList<Game> findAll2() {
         ArrayList<Game> games = new ArrayList<>();
         try {
             String sql = "SELECT game.id, title, game.type, published_at, GROUP_CONCAT(device.name) device_names, \n" +
@@ -208,5 +261,29 @@ public class GameRepository implements  RepositoryInterface<Game>
         } catch(SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private ArrayList<Device> findAllDevice(Integer id)
+    {
+        ArrayList<Device> devices = new ArrayList<>();
+        try {
+            String sql = "SELECT device.id, name, type, manufacturer FROM game_device " +
+                    "INNER JOIN device ON id_device = device.id WHERE id_game = ?";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next())
+            {
+                Device device = new Device();
+                device.setId(rs.getInt("id"));
+                device.setName(rs.getString("name"));
+                device.setType(rs.getString("type"));
+                device.setManufacturer(rs.getString("manufacturer"));
+                devices.add(device);
+            }
+        } catch(SQLException e){
+            throw new RuntimeException(e);
+        }
+        return devices;
     }
 }
