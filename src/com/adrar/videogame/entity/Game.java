@@ -84,4 +84,13 @@ public class Game {
     {
         this.devices.remove(device);
     }
+
+    @Override
+    public String toString() {
+        return "id=" + id +
+                ", title='" + title + '\'' +
+                ", publishedAt=" + publishedAt +
+                ", type='" + type + '\'' +
+                ", devices=" + devices;
+    }
 }

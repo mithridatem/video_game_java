@@ -48,13 +48,11 @@ public class Device {
         this.manufacturer = manufacturer;
     }
 
-    @Override
+   @Override
     public String toString() {
-        return "Device{" +
-                "id=" + id +
+        return "id=" + id +
                 ", name='" + name + '\'' +
                 ", type='" + type + '\'' +
-                ", manufacturer='" + manufacturer + '\'' +
-                '}';
+                ", manufacturer='" + manufacturer;
     }
 }

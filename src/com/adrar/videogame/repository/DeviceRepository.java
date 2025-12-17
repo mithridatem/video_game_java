@@ -104,7 +104,7 @@ public class DeviceRepository implements RepositoryInterface<Device>{
                 //Véfifier si on à un resultat
                 if (resultSet.next()) {
                     //Setter l'id à l'objet
-                    device.setId(resultSet.getInt("id"));
+                    device.setId(resultSet.getInt(1));
                 }
             }
         } catch (SQLException e) {
